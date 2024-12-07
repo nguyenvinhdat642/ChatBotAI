@@ -1,0 +1,295 @@
+/* Reset cơ bản */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Arial', sans-serif;
+  box-sizing: border-box;
+}
+
+.container {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 20%;
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.sidebar-history-title {
+  margin-top: 30px;
+  font-size: 18px;
+}
+
+.sidebar-list {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar-list li {
+  margin: 10px 0;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background 0.3s;
+}
+
+.sidebar-list li:hover {
+  background-color: #34495e;
+}
+
+/* Main content */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #ecf0f1;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: #3498db;
+  color: white;
+}
+
+.greeting {
+  font-size: 16px;
+}
+
+.actions .btn {
+  margin-left: 10px;
+  background-color: #2980b9;
+  color: white;
+  border: none;
+  padding: 5px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s;
+}
+
+.actions .btn:hover {
+  background-color: #1c598a;
+}
+
+/* Chat Area */
+.chat-area {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.chat-message {
+  max-width: 70%;
+  padding: 10px 15px;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.chat-message.user {
+  align-self: flex-start;
+  background-color: #dcdde1;
+  color: #2c3e50;
+}
+
+.chat-message.bot {
+  align-self: flex-end;
+  background-color: #81ecec;
+  color: #2c3e50;
+}
+
+/* Chat Input */
+.chat-input-container {
+  display: flex;
+  padding: 15px;
+  background-color: #bdc3c7;
+  border-top: 1px solid #ccc;
+}
+
+.chat-input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  outline: none;
+}
+
+.chat-input:focus {
+  border-color: #3498db;
+}
+
+.send-btn {
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin-left: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.3s;
+}
+
+.send-btn:hover {
+  background-color: #27ae60;
+}
+
+/* Footer note */
+.footer-note {
+  text-align: center;
+  font-size: 12px;
+  color: #7f8c8d;
+  padding: 10px 0;
+  background-color: #ecf0f1;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 20%;
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 20px; /* Khoảng cách giữa các box */
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-title, .sidebar-history-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* Box chung cho menu và lịch sử */
+.sidebar-box {
+  background-color: #34495e; /* Màu nền box */
+  padding: 15px;
+  border-radius: 12px; /* Bo góc */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Hiệu ứng đổ bóng */
+}
+
+.sidebar-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-list li {
+  margin: 10px 0;
+  padding: 10px;
+  cursor: pointer;
+  background-color: #2c3e50; /* Màu nền item */
+  color: #ecf0f1;
+  border-radius: 8px; /* Bo góc cho item */
+  transition: background 0.3s, transform 0.2s;
+}
+
+.sidebar-list li:hover {
+  background-color: #3b556f; /* Màu nền khi hover */
+  transform: scale(1.05); /* Hiệu ứng phóng to nhẹ */
+}
+
+/* Sidebar Header */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.header-title {
+  color: #ecf0f1;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* User Information and Settings */
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px;
+  margin-top: 20px;
+  background-color: #34495e;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.user-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid #ecf0f1;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.user-name {
+  color: #ecf0f1;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.settings-link {
+  color: #bdc3c7;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.settings-link:hover {
+  text-decoration: underline;
+}
+
+/* Chat History List */
+.chat-history {
+  max-height: 150px; /* Giới hạn chiều cao */
+  overflow-y: auto; /* Cuộn khi danh sách dài */
+}
+
+.sidebar-list li {
+  margin: 10px 0;
+  padding: 10px;
+  cursor: pointer;
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  border-radius: 8px;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.sidebar-list li:hover {
+  background-color: #3b556f;
+  transform: scale(1.05);
+}
