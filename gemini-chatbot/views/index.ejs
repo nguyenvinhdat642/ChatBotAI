@@ -43,9 +43,40 @@
             <div class="sidebar-user">
                 <div class="user-info">
                     <p class="user-name">Nguyễn Vinh Đạt</p>
-                    <a href="#" class="settings-link">Cài đặt</a>
+                    <div style="position: relative;">
+                        <a href="#" class="settings-link" id="settingsLink">Cài đặt</a>
+                        <div class="settings-popup" id="settingsPopup">
+                            <div class="popup-menu">
+                                <div class="popup-item">
+                                    <i class="fas">👤</i>
+                                    <span>Tài khoản</span>
+                                </div>
+                                <div class="popup-item">
+                                    <i class="fas">💳</i>
+                                    <span>Thanh toán</span>
+                                </div>
+                                <div class="popup-item">
+                                    <i class="fas">📊</i>
+                                    <span>Thống kê</span>
+                                </div>
+                                <div class="popup-item">
+                                    <i class="fas">🔒</i>
+                                    <span>Bảo mật</span>
+                                </div>
+                                <div class="popup-item">
+                                    <i class="fas">⚙️</i>
+                                    <span>Tùy chỉnh</span>
+                                </div>
+                                <div class="popup-item">
+                                    <i class="fas">🚪</i>
+                                    <span>Đăng xuất</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+        
         </div>
 
         <!-- Main Chat Area -->
@@ -325,6 +356,40 @@
             }
         `;
         document.head.appendChild(messageStyle);
+
+        // Xử lý menu popup settings
+        const settingsLink = document.getElementById('settingsLink');
+        const settingsPopup = document.getElementById('settingsPopup');
+
+        settingsLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            settingsPopup.classList.toggle('show');
+        });
+
+        // Đóng popup khi click ra ngoài
+        document.addEventListener('click', (e) => {
+            if (!settingsLink.contains(e.target) && !settingsPopup.contains(e.target)) {
+                settingsPopup.classList.remove('show');
+            }
+        });
+
+        // Xử lý click vào các mục trong menu
+        document.querySelectorAll('.popup-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const action = item.querySelector('span').textContent;
+                console.log(`Clicked: ${action}`);
+                // Thêm xử lý cho từng action tại đây
+                settingsPopup.classList.remove('show');
+            });
+        });
+
+        // Xử lý resize window
+        window.addEventListener('resize', function() {
+            const sidebar = document.querySelector('.sidebar');
+            if (window.innerWidth > 768) {
+                sidebar.classList.remove('collapsed');
+            }
+        });
     </script>
 </body>
 </html>

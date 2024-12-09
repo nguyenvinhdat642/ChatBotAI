@@ -1,101 +1,828 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Legal Chatbot</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Rule VietNam</title>
+    <link rel="icon" href="/images/logo.png" type="image/x-icon">
+    <link rel="stylesheet" href="/css/style.css">
     <style>
-        .chat-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
+        .settings-popup {
+            position: absolute;
+            right: -100px;
+            bottom: 50px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: none;
+            z-index: 1000;
+            min-width: 200px;
         }
-        .chat-box {
-            height: 400px;
-            border: 1px solid #ccc;
+
+        .settings-popup::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            right: 20px;
+            border-width: 10px 10px 0 10px;
+            border-style: solid;
+            border-color: white transparent transparent transparent;
+        }
+
+        .popup-menu {
+            padding: 8px 0;
+        }
+
+        .popup-item {
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            color: #333;
+            transition: background-color 0.2s;
+        }
+
+        .popup-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        .popup-item i {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .settings-popup.show {
+            display: block;
+        }
+
+        .settings-link {
+            position: relative;
+        }
+
+        .chat-history {
+            max-height: 150px;
             overflow-y: auto;
-            padding: 10px;
+            scrollbar-width: none; /* Cho Firefox */
+            -ms-overflow-style: none; /* Cho Internet Explorer và Edge */
+        }
+
+        /* Ẩn thanh cuộn cho Chrome, Safari và Opera */
+        .chat-history::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Media queries cho thiết bị di động */
+        @media screen and (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: 100vh; /* Chiều cao full màn hình */
+                padding: 15px;
+                position: fixed; /* Cố định vị trí */
+                top: 0;
+                left: 0;
+                overflow-y: auto; /* Cho phép cuộn */
+                z-index: 1000;
+                transition: transform 0.3s ease;
+                background: linear-gradient(180deg, #1a237e 0%, #283593 100%);
+            }
+
+            /* Khi sidebar bị ẩn */
+            .sidebar.collapsed {
+                transform: translateX(-100%);
+            }
+
+            /* Điều chỉnh main content */
+            .main {
+                width: 100%;
+                margin-left: 0;
+                transition: margin-left 0.3s ease;
+            }
+
+            /* Ẩn thanh cuộn nhưng vẫn giữ chức năng cuộn */
+            .sidebar::-webkit-scrollbar {
+                display: none;
+            }
+            
+            .sidebar {
+                scrollbar-width: none; /* Firefox */
+                -ms-overflow-style: none; /* IE and Edge */
+            }
+
+            .main {
+                width: 100%;
+                height: calc(100vh - 200px); /* Điều chỉnh chiều cao phù hợp */
+            }
+
+            .chat-area {
+                padding: 15px;
+            }
+
+            .chat-message {
+                max-width: 85%;
+            }
+
+            .header {
+                padding: 10px 15px;
+            }
+
+            .greeting {
+                font-size: 16px;
+            }
+
+            .actions .btn {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+
+            .chat-input-container {
+                padding: 10px 15px;
+            }
+
+            .chat-input {
+                padding: 10px;
+            }
+
+            .send-btn {
+                width: 40px;
+                height: 40px;
+            }
+
+            /* Điều chỉnh menu popup trên mobile */
+            .settings-popup {
+                right: 0;
+                left: auto;
+                width: 200px;
+            }
+
+            /* Ẩn một số phần không cần thiết trên mobile */
+            .sidebar-box {
+                margin-bottom: 10px;
+                padding: 15px;
+            }
+
+            /* Ẩn/hiện sidebar */
+            .sidebar.collapsed {
+                display: none;
+            }
+        }
+
+        /* Cho màn hình cực nhỏ (điện thoại) */
+        @media screen and (max-width: 480px) {
+            .greeting {
+                font-size: 14px;
+            }
+
+            .actions {
+                display: flex;
+                gap: 5px;
+            }
+
+            .actions .btn {
+                padding: 5px 10px;
+                font-size: 11px;
+            }
+
+            .chat-message {
+                max-width: 90%;
+                padding: 10px 15px;
+                font-size: 13px;
+            }
+        }
+
+        /* Style cho nút toggle */
+        .sidebar-toggle {
+            display: none !important; /* Ẩn hoàn toàn trên desktop */
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1001;
+            background: #3949ab;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        @media screen and (max-width: 768px) {
+            .sidebar-toggle {
+                display: block !important; /* Chỉ hiện trên mobile */
+            }
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             margin-bottom: 20px;
         }
-        .message {
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 5px;
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
         }
-        .user-message {
-            background: #e3f2fd;
-            margin-left: 20%;
+
+        .header-title {
+            color: #ecf0f1;
+            font-size: 20px;
+            font-weight: bold;
         }
-        .bot-message {
-            background: #f5f5f5;
-            margin-right: 20%;
+
+        /* Style cho desktop */
+        @media screen and (min-width: 769px) {
+            .sidebar-header {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                padding-right: 10px;
+            }
+
+            .header-title {
+                margin-right: auto;
+                flex: 1;
+            }
         }
-        .input-container {
-            display: flex;
-            gap: 10px;
+
+        /* Style cho mobile */
+        @media screen and (max-width: 768px) {
+            .sidebar-toggle {
+                position: fixed;
+                top: 15px;
+                right: 15px;
+                background: #3949ab;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                z-index: 1001;
+            }
+
+            .sidebar-toggle:hover {
+                background: #283593;
+            }
         }
-        #messageInput {
-            flex: 1;
-            padding: 10px;
+
+
+        /* Style cho sidebar */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #1a237e 0%, #283593 100%);
+            color: #fff;
+            padding: 25px;
+            transition: transform 0.3s ease;
         }
-        button {
-            padding: 10px 20px;
+
+        /* Style cho trạng thái ẩn của sidebar */
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+
+        /* Responsive styles */
+        @media screen and (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                height: 100vh;
+                z-index: 1000;
+            }
+
+            .main {
+                width: 100%;
+                margin-left: 0;
+            }
+        }
+
+        .main {
+            transition: margin-left 0.3s ease;
+        }
+
+        .main.expanded {
+            margin-left: 0;
+        }
+
+        /* Điều chỉnh style cho sidebar */
+        .sidebar {
+            transform: translateX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        @media screen and (max-width: 768px) {
+            .main {
+                margin-left: 0;
+                width: 100%;
+            }
+            
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                height: 100vh;
+                z-index: 1000;
+            }
+        }
+
+        /* Sidebar mặc định */
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+        }
+
+        /* Header mặc định ẩn trên desktop */
+        .header {
+            display: none;
+        }
+
+        /* Responsive cho mobile */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                position: fixed;
+                z-index: 100;
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .header {
+                display: flex;
+                align-items: center;
+                padding: 1rem;
+                background: #fff;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+
+            .toggle-sidebar {
+                position: fixed;
+                top: 15px;
+                left: 15px;
+                z-index: 1001;
+                background: #3949ab;
+                color: white;
+                border: none;
+                padding: 8px 12px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 20px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            }
+            
+
+            .header-logo {
+                margin-left: auto;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding-right: 15px;
+            }
+
+            .header-logo img {
+                height: 32px;
+            }
+
+            .header-logo span {
+                font-weight: 500;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="chat-container">
-        <div class="chat-box" id="chatBox"></div>
-        <div class="input-container">
-            <input type="text" id="messageInput" placeholder="Nhập câu hỏi của bạn...">
-            <button onclick="sendMessage()">Gửi</button>
+    <header class="header" style="color: blue;">
+        <button class="toggle-sidebar" onclick="toggleSidebar()">☰</button>
+        <div class="header-logo">
+            <img src="/images/logo.png" alt="Logo">
+            <span>Rule VietNam</span>
+        </div>
+    </header>
+
+    <aside class="sidebar">
+        <!-- Nội dung sidebar -->
+    </aside>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Header với logo -->
+            <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+            <div class="sidebar-header">
+                <img src="/images/logo.png" alt="Logo" class="logo">
+                <h1 class="header-title">Rule VietNam</h1>
+            </div>
+            
+            <!-- Menu Box -->
+            <div class="sidebar-box">
+                <h2 class="sidebar-title">Menu</h2>
+                <ul class="sidebar-list">
+                    <li>Luật hành chính</li>
+                    <li>Luật hình sự</li>
+                    <li>Luật dân sự</li>
+                </ul>
+            </div>
+            
+            <!-- History Box -->
+            <div class="sidebar-box">
+                <h3 class="sidebar-history-title">Lịch sử</h3>
+                <div class="chat-history">
+                    <ul class="sidebar-list">
+                        <li>Hôm nay</li>
+                        <li>Hôm qua</li>
+                        <li>7 ngày trước đó</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- User Information and Settings -->
+            <div class="sidebar-user">
+                <div class="user-info">
+                    <p class="user-name">Nguyễn Vinh Đạt</p>
+                    <div style="position: relative;">
+                        <a href="#" class="settings-link" id="settingsLink">Cài đặt</a>
+                        <div class="settings-popup" id="settingsPopup">
+                            <div class="popup-menu">
+                                <div class="popup-item">
+                                    <i class="fas">👤</i>
+                                    <span>Tài khoản</span>
+                                </div>
+                                <div class="popup-item">
+                                    <i class="fas">💳</i>
+                                    <span>Thanh toán</span>
+                                </div>
+                                <div class="popup-item">
+                                    <i class="fas">📊</i>
+                                    <span>Thống kê</span>
+                                </div>
+                                <div class="popup-item">
+                                    <i class="fas">🔒</i>
+                                    <span>Bảo mật</span>
+                                </div>
+                                <div class="popup-item">
+                                    <i class="fas">⚙️</i>
+                                    <span>Tùy chỉnh</span>
+                                </div>
+                                <div class="popup-item">
+                                    <i class="fas">🚪</i>
+                                    <span>Đăng xuất</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="main">
+            <!-- <div class="header">
+                <span class="greeting">Chào Nguyễn Vinh Đạt! Hôm nay bạn cần hỗ trợ gì? 😊</span>
+                <div class="actions">
+                    <button class="btn share-btn">Chia sẻ</button>
+                    <button class="btn lang-btn">EN</button>
+                </div>
+            </div> -->
+            
+            
+            <div class="chat-area" id="chatbox"></div>
+            
+            <div class="chat-input-container">
+                <input type="text" class="chat-input" id="userInput" placeholder="Nhập tin nhắn...">
+                <button class="btn send-btn" id="sendButton">➤</button>
+            </div>
+            
+            <div class="footer-note">ChatBot có thể mắc lỗi. Hãy kiểm tra các thông tin quan trọng.</div>
         </div>
     </div>
 
+    <script src="/js/script.js"></script>
+    
     <script>
-        async function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const message = input.value.trim();
-            if (!message) return;
+        const chatbox = document.getElementById('chatbox');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
 
-            // Hiển thị tin nhắn người dùng
-            addMessage(message, 'user');
-            input.value = '';
-
-            try {
-                const response = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ message })
-                });
-
-                const data = await response.json();
-                if (data.success) {
-                    addMessage(data.message, 'bot');
-                } else {
-                    addMessage('Xin lỗi, có lỗi xảy ra!', 'bot');
+        function convertMarkdownToHtml(text) {
+            // Tách văn bản thành các dòng
+            let lines = text.split('\n');
+            
+            // Xử lý từng dòng
+            lines = lines.map(line => {
+                // Xử lý tiêu đề (dòng có dấu ** ở đầu và cuối)
+                if (line.startsWith('*') && line.endsWith('*')) {
+                    return `<h3>${line.replace(/\*+/g, '')}</h3>`;
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                addMessage('Xin lỗi, có lỗi xảy ra!', 'bot');
+                return line;
+            });
+            
+            // Nối các dòng lại với nhau
+            text = lines.join('<br>');
+            
+            // Xử lý bold text ở giữa văn bản
+            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            return text;
+        }
+
+        function addMessageToChatbox(message, sender) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('chat-message', sender === 'user' ? 'user' : 'bot');
+            
+            if (sender === 'bot') {
+                const formattedMessage = convertMarkdownToHtml(message);
+                messageElement.innerHTML = formattedMessage;
+            } else {
+                messageElement.textContent = message;
+            }
+            
+            chatbox.appendChild(messageElement);
+            chatbox.scrollTop = chatbox.scrollHeight;
+        }
+
+        function addThinkingMessage() {
+            const thinkingElement = document.createElement('div');
+            thinkingElement.classList.add('chat-message', 'bot', 'thinking-message');
+            thinkingElement.textContent = 'Đang suy nghĩ...';
+            chatbox.appendChild(thinkingElement);
+            chatbox.scrollTop = chatbox.scrollHeight;
+            return thinkingElement;
+        }
+
+        let chatHistory = [];
+        let currentTopic = ''; // Biến lưu chủ đề hiện tại
+
+        function detectTopic(message) {
+            // Lấy câu đầu tiên làm chủ đề
+            const firstLine = message.split('\n')[0];
+            // Loại bỏ các ký tự đặc biệt và dấu *
+            return firstLine.replace(/[*]/g, '').trim();
+        }
+
+        async function sendMessage() {
+            const message = userInput.value;
+            if (message.trim() !== '') {
+                userInput.disabled = true;
+                sendButton.disabled = true;
+                
+                addMessageToChatbox(message, 'user');
+                userInput.value = '';
+                
+                const thinkingMessage = addThinkingMessage();
+                
+                try {
+                    const response = await fetch('/api/sendMessage', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ message }),
+                    });
+                    
+                    thinkingMessage.remove();
+                    
+                    const data = await response.json();
+                    if (data.message) {
+                        addMessageToChatbox(data.message, 'bot');
+                        
+                        // Cập nhật chủ đề nếu là câu hỏi mới
+                        if (!currentTopic) {
+                            currentTopic = detectTopic(data.message);
+                            updateChatHistory(currentTopic);
+                        }
+                    }
+                } catch (error) {
+                    thinkingMessage.remove();
+                    console.error('Error:', error);
+                    addMessageToChatbox('Có lỗi xảy ra khi gửi tin nhắn', 'bot');
+                } finally {
+                    userInput.disabled = false;
+                    sendButton.disabled = false;
+                    userInput.focus();
+                }
             }
         }
 
-        function addMessage(message, type) {
-            const chatBox = document.getElementById('chatBox');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${type}-message`;
-            messageDiv.textContent = message;
-            chatBox.appendChild(messageDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
+        function updateChatHistory(topic) {
+            if (!topic) return;
+            
+            const historyList = document.querySelector('.chat-history .sidebar-list');
+            const today = new Date().toLocaleDateString('vi-VN');
+            
+            // Kiểm tra xem đã có mục cho ngày hôm nay chưa
+            let todayGroup = historyList.querySelector(`[data-date="${today}"]`);
+            if (!todayGroup) {
+                // Tạo nhóm mới cho ngày hôm nay
+                const dateItem = document.createElement('li');
+                dateItem.textContent = 'Hôm nay';
+                dateItem.setAttribute('data-date', today);
+                historyList.insertBefore(dateItem, historyList.firstChild);
+                todayGroup = dateItem;
+            }
+            
+            // Thêm chủ đề mới
+            const topicItem = document.createElement('li');
+            topicItem.textContent = topic;
+            topicItem.style.paddingLeft = '20px';
+            topicItem.style.fontSize = '0.9em';
+            topicItem.style.cursor = 'pointer';
+            
+            // Thêm vào sau nhóm ngày
+            if (todayGroup.nextSibling) {
+                historyList.insertBefore(topicItem, todayGroup.nextSibling);
+            } else {
+                historyList.appendChild(topicItem);
+            }
+            
+            // Giới hạn số lượng chủ đề hiển thị
+            const maxTopics = 10;
+            const topics = historyList.querySelectorAll('li:not([data-date])');
+            if (topics.length > maxTopics) {
+                historyList.removeChild(topics[topics.length - 1]);
+            }
         }
 
-        // Bắt sự kiện Enter
-        document.getElementById('messageInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
+        // Thêm hàm để bắt đầu chủ đề mới
+        function startNewTopic() {
+            currentTopic = '';
+            // Có thể thêm logic khác khi bắt đầu chủ đề mới
+        }
+
+        // Thêm nút "Chủ đề mới" vào sidebar
+        const sidebarBox = document.querySelector('.sidebar-box');
+        const newTopicButton = document.createElement('button');
+        newTopicButton.textContent = 'Chủ đề mới';
+        newTopicButton.className = 'new-topic-btn';
+        newTopicButton.onclick = startNewTopic;
+        sidebarBox.appendChild(newTopicButton);
+
+        // Thêm style cho nút
+        const style = document.createElement('style');
+        style.textContent += `
+            .new-topic-btn {
+                width: 100%;
+                padding: 8px;
+                margin-top: 10px;
+                background-color: #3498db;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+            }
+            
+            .new-topic-btn:hover {
+                background-color: #2980b9;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Khởi tạo lịch sử chat khi tải trang
+        window.addEventListener('load', updateChatHistory);
+
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
                 sendMessage();
             }
         });
+
+        // Thêm style cho thinking message
+        const thinkingStyle = document.createElement('style');
+        thinkingStyle.textContent = `
+            .thinking-message {
+                opacity: 0.7;
+                font-style: italic;
+            }
+            
+            @keyframes thinking {
+                0% { content: ''; }
+                25% { content: '.'; }
+                50% { content: '..'; }
+                75% { content: '...'; }
+            }
+            
+            .thinking-message::after {
+                content: '';
+                display: inline-block;
+                animation: thinking 1.5s infinite;
+            }
+        `;
+        document.head.appendChild(thinkingStyle);
+
+        // Thêm CSS cho tin nhắn bot
+        const messageStyle = document.createElement('style');
+        messageStyle.textContent = `
+            .bot-message {
+                white-space: pre-wrap;
+                word-wrap: break-word;
+                line-height: 1.5;
+            }
+            
+            .bot-message h3 {
+                margin: 0 0 10px 0;
+                font-size: 1.2em;
+                color: #2c3e50;
+            }
+            
+            .bot-message br {
+                display: block;
+                margin: 5px 0;
+            }
+            
+            .bot-message strong {
+                font-weight: bold;
+            }
+
+            .chat-message {
+                max-width: 80%;
+                padding: 10px 15px;
+                border-radius: 10px;
+                margin-bottom: 10px;
+            }
+
+            .user {
+                background-color: #3498db;
+                color: white;
+                margin-left: auto;
+            }
+
+            .bot {
+                background-color: #f0f0f0;
+                margin-right: auto;
+            }
+        `;
+        document.head.appendChild(messageStyle);
+
+        // Xử lý menu popup settings
+        const settingsLink = document.getElementById('settingsLink');
+        const settingsPopup = document.getElementById('settingsPopup');
+
+        settingsLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            settingsPopup.classList.toggle('show');
+        });
+
+        // Đóng popup khi click ra ngoài
+        document.addEventListener('click', (e) => {
+            if (!settingsLink.contains(e.target) && !settingsPopup.contains(e.target)) {
+                settingsPopup.classList.remove('show');
+            }
+        });
+
+        // Xử lý click vào các mục trong menu
+        document.querySelectorAll('.popup-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const action = item.querySelector('span').textContent;
+                console.log(`Clicked: ${action}`);
+                // Thêm xử lý cho từng action tại đây
+                settingsPopup.classList.remove('show');
+            });
+        });
+
+        // Xử lý resize window
+        window.addEventListener('resize', function() {
+            const sidebar = document.querySelector('.sidebar');
+            if (window.innerWidth > 768) {
+                sidebar.classList.remove('collapsed');
+            }
+        });
+
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.querySelector('.sidebar');
+        const main = document.querySelector('.main');
+
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            // Thêm class để điều chỉnh main content
+            main.classList.toggle('expanded');
+        });
+
+        // Thêm xử lý click bên ngoài để ẩn sidebar trên mobile
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+                    sidebar.classList.add('collapsed');
+                    main.classList.add('expanded');
+                }
+            }
+        });
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('active');
+        }
     </script>
 </body>
-</html> 
+</html>
