@@ -144,7 +144,7 @@
                 const thinkingMessage = addThinkingMessage();
                 
                 try {
-                    const response = await fetch('/sendMessage', {
+                    const response = await fetch('/api/sendMessage', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

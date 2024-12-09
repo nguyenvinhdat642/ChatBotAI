@@ -1,99 +1,83 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
-require("dotenv").config();
-const express = require("express");
-const app = express();
+require('dotenv').config()
+const readline = require('readline');
 
-// Cấu hình EJS
-app.set("view engine", "ejs");
-app.set("views", "./views");
+const { chunkTexts } = require('./src/chunk-texts');
+const { embedTexts } = require('./src/embed-texts');
+const { generateAnswer } = require('./src/generate-answer');
+const { extractTextsFromPDF } = require('./src/parse-pdf');
+const { checkIndexExists, createIndex, describeIndexStats, retrieveRelevantChunks, storeEmbeddings, deleteIndex } = require('./src/vector-db');
 
-// Middleware để xử lý dữ liệu JSON
-app.use(express.json());
+const processPdf = async (pdfpath = './pdfs/VanBanGoc_91.2015.QH13.P1.pdf') => {
+  console.log('Processing PDF', pdfpath)
+  const pdfTexts = await extractTextsFromPDF(pdfpath);
+  const pdfChunks = chunkTexts(pdfTexts);
+  const embeddings = await embedTexts(pdfChunks)
+  await storeEmbeddings(embeddings);
+}
 
-// Thêm middleware để serve static files
-app.use(express.static('public'));
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-
-// Lưu trữ các kết nối của client
-const clients = [];
-
-// Lưu trữ lịch sử chat cho mỗi phiên
-const chatHistory = new Map();
-
-// Route cho trang chủ
-app.get("/", (req, res) => {
-  res.render("index");
-});
-
-// Route để xử lý tin nhắn và thiết lập SSE
-app.post("/sendMessage", async (req, res) => {
-  const userMessage = req.body.message;
-  const sessionId = req.sessionID || 'default'; // Nếu không có session thì dùng 'default'
+const init = async () => {
+  const indexExists = await checkIndexExists();
+  console.log('Index exists', indexExists)
   
-  // Khởi tạo lịch sử chat nếu chưa có
-  if (!chatHistory.has(sessionId)) {
-    chatHistory.set(sessionId, [
-      {
-        role: "user",
-        parts: [{ text: "Xin chào" }],
-      },
-      {
-        role: "model",
-        parts: [{ text: "Chào bạn! Tôi có thể giúp gì cho bạn?" }],
-      },
-    ]);
+  if (!indexExists) {
+    console.log('Creating new index for Gemini embeddings...');
+    await createIndex();
+  } else {
+    const indexStats = await describeIndexStats()
+    console.log('Index stats', indexStats)
   }
+  
+  // Kiểm tra xem đã có dữ liệu trong index chưa
+  const query = 'Điều 1. Phạm vi điều chỉnh';
+  const relevantChunksMatchingQuery = await retrieveRelevantChunks(query);
+  console.log(`Chunks matching for query "${query}"`, relevantChunksMatchingQuery)
+  
+  // Chỉ thêm dữ liệu mới nếu index trống
+  if (!relevantChunksMatchingQuery.length) {
+    console.log('No matching chunks found, Need to parse PDF and store embeddings')
+    console.log('call processPdf function')
+    await processPdf()
+  }
+}
 
-  console.log(`[User]: ${userMessage}`);
 
-  const chat = model.startChat({
-    history: chatHistory.get(sessionId),
-    generationConfig: {
-      maxOutputTokens: 3000,
-      temperature: 0.9,
-      topK: 30,
-    },
+const main = async () => {
+  // Create index and store chunks and embeddings from pdfs/basic-concepts-gst.pdf
+  // This will only happen for the first time
+  await init();
+
+  // Create an interface for terminal input
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
   });
 
-  try {
-    const result = await chat.sendMessage(userMessage);
-    const response = await result.response;
-    const fullResponse = response.text();
-    
-    // Cập nhật lịch sử chat
-    const currentHistory = chatHistory.get(sessionId);
-    currentHistory.push(
-      {
-        role: "user",
-        parts: [{ text: userMessage }],
-      },
-      {
-        role: "model",
-        parts: [{ text: fullResponse }],
+  // Function to prompt the user and handle the query
+  const promptUser = () => {
+    rl.question('Enter your query (type "quit" to exit): ', async query => {
+      if (query.toLowerCase() === 'quit' || query.toLowerCase() === 'exit') {
+        console.log('Exiting...');
+        rl.close();
+        return;
       }
-    );
-    
-    // Giới hạn lịch sử để tránh quá tải
-    if (currentHistory.length > 20) {
-      currentHistory.splice(2, 2); // Xóa cặp tin nhắn cũ nhất (giữ lại tin nhắn chào hỏi ban đầu)
-    }
-    
-    console.log(`[Gemini]: ${fullResponse}`);
-    console.log("[Usage Metadata]:", response.usageMetadata);
 
-    res.json({ 
-      message: fullResponse,
-      history: currentHistory 
+      const relevantChunksMatchingQuery = await retrieveRelevantChunks(query);
+      console.log(relevantChunksMatchingQuery)
+      const answer = await generateAnswer(query, relevantChunksMatchingQuery);
+      // Print the query and answer with different colors
+      console.log('-----------------------------------');
+      console.log(`Query: ${query}`);
+      console.log(`\x1b[31mAnswer: ${answer}\x1b[0m`); // \x1b[31m sets the text color to red, \x1b[0m resets it
+      console.log('-----------------------------------');
+
+      // Prompt the user again after answering
+      promptUser();
     });
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
+  };
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+  // Start the loop
+  promptUser();
+};
+
+// Run the main function
+main();
